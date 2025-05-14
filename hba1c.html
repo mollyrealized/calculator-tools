@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HbA1c & Blood Glucose Converter</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --card-bg: #f5f5f5;
+            --border-color: #dddddd;
+            --button-bg: #4a86e8;
+            --button-hover: #3a76d8;
+            --button-text: #ffffff;
+            --result-bg: #e8f4fe;
+            --active-tab: #4a86e8;
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #121212;
+                --text-color: #e0e0e0;
+                --card-bg: #1e1e1e;
+                --border-color: #333333;
+                --button-bg: #2d5bb9;
+                --button-hover: #3a76d8;
+                --button-text: #ffffff;
+                --result-bg: #1a2940;
+                --active-tab: #2d5bb9;
+            }
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .tab {
+            padding: 10px 15px;
+            cursor: pointer;
+            flex: 1;
+            text-align: center;
+            transition: background-color 0.3s;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+        }
+        
+        .tab.active {
+            background-color: var(--active-tab);
+            color: white;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input {
+            width: 120px;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            background-color: var(--result-bg);
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .notes {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #666;
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+        }
+
+        /* Hide the inactive tab content */
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>HbA1c & Glucose Converter</h1>
+        
+        <div class="tabs">
+            <div class="tab active" id="tab-hba1c">HbA1c to Glucose</div>
+            <div class="tab" id="tab-glucose">Glucose to HbA1c</div>
+        </div>
+        
+        <div class="tab-content active" id="content-hba1c">
+            <div class="input-group">
+                <label for="hba1c">HbA1c (%)</label>
+                <input type="number" id="hba1c" step="0.1" min="4" max="14" placeholder="Enter HbA1c">
+            </div>
+            
+            <div id="glucose-result" class="result">
+                Average Blood Glucose: <span id="glucose-value">--</span> mg/dL
+            </div>
+        </div>
+        
+        <div class="tab-content" id="content-glucose">
+            <div class="input-group">
+                <label for="glucose">Blood Glucose (mg/dL)</label>
+                <input type="number" id="glucose" step="1" min="70" max="350" placeholder="Enter mg/dL">
+            </div>
+            
+            <div id="hba1c-result" class="result">
+                Estimated HbA1c: <span id="hba1c-value">--</span>%
+            </div>
+        </div>
+        
+        <div class="notes">
+            <p>Using the formula: Average Blood Glucose (mg/dL) = (28.7 × HbA1c) - 46.7</p>
+            <p>This is an estimate based on research correlating HbA1c with average glucose. Individual results may vary.</p>
+        </div>
+    </div>
+
+    <script>
+        // Get DOM elements
+        const tabHbA1c = document.getElementById('tab-hba1c');
+        const tabGlucose = document.getElementById('tab-glucose');
+        const contentHbA1c = document.getElementById('content-hba1c');
+        const contentGlucose = document.getElementById('content-glucose');
+        const hba1cInput = document.getElementById('hba1c');
+        const glucoseInput = document.getElementById('glucose');
+        const glucoseValue = document.getElementById('glucose-value');
+        const hba1cValue = document.getElementById('hba1c-value');
+        
+        // Switch tabs
+        tabHbA1c.addEventListener('click', () => {
+            tabHbA1c.classList.add('active');
+            tabGlucose.classList.remove('active');
+            contentHbA1c.classList.add('active');
+            contentGlucose.classList.remove('active');
+        });
+        
+        tabGlucose.addEventListener('click', () => {
+            tabGlucose.classList.add('active');
+            tabHbA1c.classList.remove('active');
+            contentGlucose.classList.add('active');
+            contentHbA1c.classList.remove('active');
+        });
+        
+        // Convert HbA1c to Blood Glucose
+        hba1cInput.addEventListener('input', () => {
+            const hba1c = parseFloat(hba1cInput.value);
+            
+            if (!isNaN(hba1c) && hba1c >= 4 && hba1c <= 14) {
+                // Formula: Average Blood Glucose (mg/dL) = (28.7 × HbA1c) - 46.7
+                const glucose = (28.7 * hba1c) - 46.7;
+                glucoseValue.textContent = Math.round(glucose);
+            } else {
+                glucoseValue.textContent = '--';
+            }
+        });
+        
+        // Convert Blood Glucose to HbA1c
+        glucoseInput.addEventListener('input', () => {
+            const glucose = parseFloat(glucoseInput.value);
+            
+            if (!isNaN(glucose) && glucose >= 70 && glucose <= 350) {
+                // Formula (reversed): HbA1c = (Average Blood Glucose + 46.7) / 28.7
+                const hba1c = (glucose + 46.7) / 28.7;
+                hba1cValue.textContent = hba1c.toFixed(1);
+            } else {
+                hba1cValue.textContent = '--';
+            }
+        });
+    </script>
+</body>
+</html>
