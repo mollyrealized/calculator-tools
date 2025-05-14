@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TipRound</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#000000">
+  <style>
+    html, body { background-color: #000; color: #fff; font-family: sans-serif; max-width: 400px; margin: auto; padding: 1rem; }
+    h1 { text-align: center; }
+    label { display: block; margin-top: 1rem; }
+    input { width: 100%; padding: 0.5rem; margin-top: 0.25rem; font-size: 1rem; background: #222; color: #fff; border: 1px solid #555; border-radius: 4px; }
+    input::placeholder { color: #888; }
+    .output { margin-top: 1.5rem; font-size: 1.2rem; }
+    .output div { margin: 0.5rem 0; }
+  </style>
+</head>
+<body>
+  <h1>TipRound</h1>
+
+  <label>
+    Bill Amount:
+    <input type="number" id="bill" placeholder="0.00" step="0.01" min="0">
+  </label>
+
+  <div class="output">
+    <div>Tip: $<span id="tip">0.00</span> (<span id="pctDisplay">0.00%</span>)</div>
+    <div>Total: $<span id="total">0.00</span></div>
+  </div>
+
+  <script>
+    const billInput = document.getElementById('bill');
+    const tipDisplay = document.getElementById('tip');
+    const pctDisplay = document.getElementById('pctDisplay');
+    const totalDisplay = document.getElementById('total');
+    const MIN_PCT = 18;
+
+    function calculate() {
+      const bill = parseFloat(billInput.value) || 0;
+      const minTip = bill * MIN_PCT / 100;
+      const rawTotal = bill + minTip;
+      let evenTotal = Math.ceil(rawTotal);
+      if (evenTotal % 2 !== 0) {
+        evenTotal += 1;
+      }
+      const tip = evenTotal - bill;
+      const actualPct = bill > 0 ? (tip / bill * 100) : 0;
+
+      tipDisplay.textContent = tip.toFixed(2);
+      pctDisplay.textContent = actualPct.toFixed(2) + '%';
+      totalDisplay.textContent = evenTotal.toFixed(2);
+    }
+
+    billInput.addEventListener('input', calculate);
+    calculate();
+
+    // Register service worker for PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js')
+        .then(() => console.log('Service Worker registered'))
+        .catch(err => console.error('SW registration failed:', err));
+    }
+  </script>
+</body>
+</html>
