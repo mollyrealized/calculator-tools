@@ -154,20 +154,31 @@
         }
 
         // Determine comfort level based on dew point
-        function getComfortLevel(dewPoint) {
-            let key = "L5"; // Default
-            
-            Object.keys(dewRanges).forEach(k => {
-                const [loB, hiB] = dewRanges[k];
-                if (dewPoint >= loB && dewPoint <= hiB) key = k;
-            });
-            
-            return {
-                color: dewColors[key],
-                label: dewLabels[key]
-            };
-        }
+// replace your getComfortLevel with this:
+function getComfortLevel(dewPoint) {
+  // round once, use integer comparisons
+  const dp = Math.round(dewPoint);
 
+  // check from highest comfort level down
+  if (dp >= dewRanges.L1[0]) {
+    return { color: dewColors.L1, label: dewLabels.L1 };
+  } else if (dp >= dewRanges.L2[0]) {
+    return { color: dewColors.L2, label: dewLabels.L2 };
+  } else if (dp >= dewRanges.L3[0]) {
+    return { color: dewColors.L3, label: dewLabels.L3 };
+  } else if (dp >= dewRanges.L4[0]) {
+    return { color: dewColors.L4, label: dewLabels.L4 };
+  } else if (dp >= dewRanges.L5[0]) {
+    return { color: dewColors.L5, label: dewLabels.L5 };
+  } else if (dp >= dewRanges.L6[0]) {
+    return { color: dewColors.L6, label: dewLabels.L6 };
+  } else if (dp >= dewRanges.L7[0]) {
+    return { color: dewColors.L7, label: dewLabels.L7 };
+  } else {
+    // anything below L7 min
+    return { color: dewColors.L8, label: dewLabels.L8 };
+  }
+}
         // Update the comfort level display
         function updateComfortLevel() {
             const tempInput = document.getElementById("temperature");
